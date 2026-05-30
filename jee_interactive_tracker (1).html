@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEE Preparation Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+        
+        // Check local storage for theme immediately to prevent screen flash
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        /* Dark mode scrollbar */
+        .dark ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569; 
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        /* Styling the checkboxes */
+        input[type="checkbox"] {
+            appearance: none;
+            background-color: #fff;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.25em;
+            height: 1.25em;
+            border: 2px solid #cbd5e1;
+            border-radius: 0.25em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .dark input[type="checkbox"] {
+            background-color: #1e293b;
+            border-color: #475569;
+        }
+
+        input[type="checkbox"]::before {
+            content: "";
+            width: 0.65em;
+            height: 0.65em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em white;
+            background-color: white;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
+
+        /* Sticky header and column definitions */
+        th.sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        
+        th.sticky-col, td.sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1);
+        }
+        
+        th.sticky-top-left {
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 30;
+            box-shadow: 2px 2px 5px -2px rgba(0,0,0,0.1);
+        }
+
+        /* Dark mode sticky shadows */
+        .dark th.sticky-col, .dark td.sticky-col, .dark th.sticky-top-left {
+            box-shadow: 2px 0 5px -2px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 p-4 md:p-8 transition-colors duration-200">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-end mb-8">
+            <header>
+                <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">JEE Preparation Tracker</h1>
+                <p class="text-slate-500 dark:text-slate-400">Track your daily progress from June 2026 to February 2027.</p>
+            </header>
+            
+            <button id="theme-toggle" type="button" class="text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm p-2.5 transition-colors">
+                <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+            </button>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-200">
+            <!-- Container for horizontal scrolling -->
+            <div class="overflow-x-auto h-[70vh]" id="table-container">
+                <table class="w-full text-sm text-left border-collapse" id="tracker-table">
+                    <thead class="text-xs uppercase">
+                        <tr id="header-row">
+                            <th scope="col" class="sticky-top-left px-6 py-4 border-b border-slate-200 dark:border-slate-700 min-w-[200px] bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400">
+                                Subject / Task
+                            </th>
+                            <!-- Dates will be generated here by JS -->
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Physics Section -->
+                        <tr class="section-header border-b border-slate-200 dark:border-slate-700">
+                            <th class="sticky-col px-6 py-3 font-bold text-blue-700 dark:text-blue-400 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700">
+                                PHYSICS
+                            </th>
+                            <!-- Empty cells generated here -->
+                        </tr>
+                        <tr class="group border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="phy-lec">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Lecture Complete
+                            </td>
+                        </tr>
+                        <tr class="group border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="phy-dpp">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                DPP Solved
+                            </td>
+                        </tr>
+                        <tr class="group border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="phy-hw">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Homework Done
+                            </td>
+                        </tr>
+                        <tr class="group border-b border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="phy-self">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Self Study (Hours)
+                            </td>
+                        </tr>
+
+                        <!-- Chemistry Section -->
+                        <tr class="section-header border-b border-slate-200 dark:border-slate-700">
+                            <th class="sticky-col px-6 py-3 font-bold text-green-700 dark:text-green-400 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700">
+                                CHEMISTRY
+                            </th>
+                        </tr>
+                        <tr class="group border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="chem-lec">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Lecture Complete
+                            </td>
+                        </tr>
+                        <tr class="group border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="chem-dpp">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                DPP Solved
+                            </td>
+                        </tr>
+                        <tr class="group border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="chem-hw">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Homework Done
+                            </td>
+                        </tr>
+                        <tr class="group border-b border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="chem-self">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Self Study (Hours)
+                            </td>
+                        </tr>
+
+                        <!-- Math Section -->
+                        <tr class="section-header border-b border-slate-200 dark:border-slate-700">
+                            <th class="sticky-col px-6 py-3 font-bold text-red-700 dark:text-red-400 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700">
+                                MATHEMATICS
+                            </th>
+                        </tr>
+                        <tr class="group border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="math-lec">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Lecture Complete
+                            </td>
+                        </tr>
+                        <tr class="group border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="math-dpp">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                DPP Solved
+                            </td>
+                        </tr>
+                        <tr class="group border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="math-hw">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Homework Done
+                            </td>
+                        </tr>
+                        <tr class="group hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-task="math-self">
+                            <td class="sticky-col px-6 py-4 font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50">
+                                Self Study (Hours)
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center transition-colors">
+                <span class="text-sm text-slate-500 dark:text-slate-400">Progress is saved automatically in your browser.</span>
+                <button onclick="clearData()" class="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition-colors">
+                    Reset All Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark Mode Toggle Logic
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+
+        if (document.documentElement.classList.contains('dark')) {
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        });
+
+        // Tracker Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            const startDate = new Date('2026-06-01');
+            const endDate = new Date('2027-02-28');
+            const headerRow = document.getElementById('header-row');
+            const rows = document.querySelectorAll('tbody tr[data-task]');
+            const sectionHeaders = document.querySelectorAll('tbody tr.section-header');
+            
+            let currentDate = new Date(startDate);
+            let dateStrings = [];
+
+            // 1. Generate all dates between start and end
+            while (currentDate <= endDate) {
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const month = currentDate.toLocaleString('default', { month: 'short' });
+                const dateString = `${day}-${month}`;
+                const fullDateKey = currentDate.toISOString().split('T')[0];
+                
+                dateStrings.push({ display: dateString, key: fullDateKey });
+                
+                // Add column header for this date
+                const th = document.createElement('th');
+                th.className = 'sticky-header px-4 py-4 border-b border-slate-200 dark:border-slate-700 text-center min-w-[100px] whitespace-nowrap bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400';
+                
+                // Highlight weekends
+                const dayOfWeek = currentDate.getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    th.classList.add('text-orange-600', 'dark:text-orange-400');
+                }
+                
+                th.textContent = dateString;
+                headerRow.appendChild(th);
+
+                // Move to next day
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // 2. Pad section headers (Physics, Chem, Math) so they scroll properly with sticky first column
+            sectionHeaders.forEach(row => {
+                dateStrings.forEach(() => {
+                    const td = document.createElement('td');
+                    td.className = 'border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900';
+                    row.appendChild(td);
+                });
+            });
+
+            // 3. Populate task rows with checkboxes and inputs
+            rows.forEach(row => {
+                const taskType = row.getAttribute('data-task');
+                const isSelfStudy = taskType.includes('self');
+
+                dateStrings.forEach(dateObj => {
+                    const td = document.createElement('td');
+                    td.className = 'px-4 py-4 border-b border-slate-100 dark:border-slate-700/50 text-center bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700/50 transition-colors';
+                    
+                    const storageKey = `jee_${dateObj.key}_${taskType}`;
+                    const savedValue = localStorage.getItem(storageKey);
+
+                    if (isSelfStudy) {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.min = '0';
+                        input.max = '24';
+                        input.step = '0.5';
+                        input.className = 'w-16 px-2 py-1 text-center border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white transition-colors';
+                        input.placeholder = '0';
+                        
+                        if (savedValue) {
+                            input.value = savedValue;
+                        }
+
+                        input.addEventListener('change', (e) => {
+                            localStorage.setItem(storageKey, e.target.value);
+                        });
+
+                        td.appendChild(input);
+                    } else {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'flex justify-center items-center h-full';
+                        
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        
+                        if (savedValue === 'true') {
+                            checkbox.checked = true;
+                        }
+
+                        checkbox.addEventListener('change', (e) => {
+                            localStorage.setItem(storageKey, e.target.checked);
+                        });
+
+                        wrapper.appendChild(checkbox);
+                        td.appendChild(wrapper);
+                    }
+                    
+                    row.appendChild(td);
+                });
+            });
+            
+            // Scroll to today's date
+            setTimeout(() => {
+                const today = new Date();
+                if (today >= startDate && today <= endDate) {
+                    const todayString = String(today.getDate()).padStart(2, '0') + '-' + today.toLocaleString('default', { month: 'short' });
+                    const headers = Array.from(headerRow.querySelectorAll('th'));
+                    const todayHeader = headers.find(h => h.textContent === todayString);
+                    
+                    if (todayHeader) {
+                        const container = document.getElementById('table-container');
+                        container.scrollLeft = todayHeader.offsetLeft - 200; 
+                    }
+                }
+            }, 100);
+        });
+
+        // Reset Data Function
+        function clearData() {
+            if (confirm("Are you sure you want to clear all your tracker data? This cannot be undone.")) {
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('jee_')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
